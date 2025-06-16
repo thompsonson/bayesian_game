@@ -29,7 +29,9 @@ class GradioInterface:
         self.game = BayesianGame(dice_sides=dice_sides, max_rounds=max_rounds)
         return self._get_interface_state()
 
-    def start_new_game(self, target_value: str = "") -> Tuple[str, str, plt.Figure, str]:
+    def start_new_game(
+        self, target_value: str = ""
+    ) -> Tuple[str, str, plt.Figure, str]:
         """Start a new game.
 
         Args:
@@ -70,7 +72,7 @@ class GradioInterface:
                     belief_chart,
                     game_log,
                 )
-            
+
             if self.game.game_state.phase != GamePhase.PLAYING:
                 return (
                     "❌ Game not in playing phase. Start a new game first.",
@@ -107,7 +109,9 @@ class GradioInterface:
             if state.phase == GamePhase.FINISHED:
                 # Show comprehensive final results
                 summary = self.game.get_game_summary()
-                final_correct = "✅ Correct!" if summary["guess_correct"] else "❌ Incorrect"
+                final_correct = (
+                    "✅ Correct!" if summary["guess_correct"] else "❌ Incorrect"
+                )
                 round_info = f"""
 **🏁 Final Game Results:**
 - True Target: {state.target_value}
@@ -149,8 +153,8 @@ class GradioInterface:
             Matplotlib figure showing belief distribution
         """
         # Close any existing figures to prevent memory leaks
-        plt.close('all')
-        
+        plt.close("all")
+
         fig, ax = plt.subplots(figsize=(10, 6))
 
         if self.game.game_state.current_beliefs:
@@ -175,14 +179,16 @@ class GradioInterface:
 
             ax.set_xlabel("Target Value")
             ax.set_ylabel("Belief Probability")
-            
+
             # Enhanced title based on game state
             if self.game.game_state.phase == GamePhase.FINISHED:
-                correct_indicator = "✅" if self.game.was_final_guess_correct() else "❌"
+                correct_indicator = (
+                    "✅" if self.game.was_final_guess_correct() else "❌"
+                )
                 ax.set_title(f"Final Belief Distribution {correct_indicator}")
             else:
                 ax.set_title("Player 2's Belief Distribution")
-                
+
             ax.set_xticks(targets)
             ax.set_ylim(0, 1)
             ax.grid(True, alpha=0.3)
@@ -221,13 +227,13 @@ class GradioInterface:
 
     def _create_empty_chart(self) -> plt.Figure:
         """Create an empty chart for error states.
-        
+
         Returns:
             Matplotlib figure with error message
         """
         # Close any existing figures to prevent memory leaks
-        plt.close('all')
-        
+        plt.close("all")
+
         fig, ax = plt.subplots(figsize=(10, 6))
         ax.text(
             0.5,
@@ -237,7 +243,7 @@ class GradioInterface:
             ha="center",
             va="center",
             fontsize=14,
-            color="red"
+            color="red",
         )
         ax.set_xlim(0, 1)
         ax.set_ylim(0, 1)
@@ -268,20 +274,30 @@ class GradioInterface:
         if self.game.game_state.phase == GamePhase.FINISHED:
             log_lines.append("")
             log_lines.append("**🏁 Game Completed!**")
-            
+
             if self.game.was_final_guess_correct():
-                log_lines.append("🎉 **Congratulations!** Player 2 correctly identified the target!")
+                log_lines.append(
+                    "🎉 **Congratulations!** Player 2 correctly identified the target!"
+                )
             else:
-                log_lines.append("📈 **Learning opportunity!** Player 2's beliefs converged but missed the target.")
-            
+                log_lines.append(
+                    "📈 **Learning opportunity!** Player 2's beliefs converged but missed the target."
+                )
+
             # Add some Bayesian insights
             final_accuracy = self.game.get_final_guess_accuracy()
             if final_accuracy > 0.5:
-                log_lines.append(f"🎯 Strong evidence: {final_accuracy:.1%} confidence in true target")
+                log_lines.append(
+                    f"🎯 Strong evidence: {final_accuracy:.1%} confidence in true target"
+                )
             elif final_accuracy > 0.3:
-                log_lines.append(f"🤔 Moderate evidence: {final_accuracy:.1%} confidence in true target")
+                log_lines.append(
+                    f"🤔 Moderate evidence: {final_accuracy:.1%} confidence in true target"
+                )
             else:
-                log_lines.append(f"🌫️ Conflicting evidence: Only {final_accuracy:.1%} confidence in true target")
+                log_lines.append(
+                    f"🌫️ Conflicting evidence: Only {final_accuracy:.1%} confidence in true target"
+                )
 
         return "\n".join(log_lines)
 
@@ -331,11 +347,7 @@ def create_interface() -> gr.Interface:
             with gr.Column(scale=2):
                 status_output = gr.Textbox(label="Game Status", interactive=False)
                 round_info = gr.Markdown("Start a new game to begin.")
-
-        with gr.Row():
-            with gr.Column():
                 belief_plot = gr.Plot(label="Belief Distribution")
-            with gr.Column():
                 game_log = gr.Markdown("Game log will appear here.")
 
         # Event handlers
