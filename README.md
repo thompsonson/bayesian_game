@@ -1,3 +1,15 @@
+---
+title: Bayesian Game
+emoji: 🎲
+colorFrom: blue
+colorTo: purple
+sdk: gradio
+sdk_version: "4.44.0"
+app_file: app.py
+pinned: false
+license: mit
+---
+
 # 🎲 Bayesian Game
 
 A Bayesian Game implementation featuring a Belief-based Agent using domain-driven design. This interactive game demonstrates Bayesian inference in action as Player 2 attempts to deduce a hidden target die value based on evidence from dice rolls.
