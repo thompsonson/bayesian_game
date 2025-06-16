@@ -104,45 +104,13 @@ class GradioInterface:
             accuracy = self.game.get_final_guess_accuracy()
             status = f"{correct} Game finished! Final guess: {state.most_likely_target} (True: {state.target_value}) - Accuracy: {accuracy:.2f}"
 
-        # Round information
-        if state.target_value is not None:
-            if state.phase == GamePhase.FINISHED:
-                # Show comprehensive final results
-                summary = self.game.get_game_summary()
-                final_correct = (
-                    "✅ Correct!" if summary["guess_correct"] else "❌ Incorrect"
-                )
-                round_info = f"""
-**🏁 Final Game Results:**
-- True Target: {state.target_value}
-- Final Guess: {state.most_likely_target} {final_correct}
-- Final Accuracy: {summary["final_accuracy"]:.3f} (probability assigned to true target)
-- Final Entropy: {state.belief_entropy:.2f} bits
-- Rounds Played: {state.round_number}/{state.max_rounds}
-- Evidence Collected: {summary["evidence_count"]} pieces
-
-**📊 Learning Performance:**
-- Started with uniform beliefs (entropy: {np.log2(len(state.current_beliefs)):.2f} bits)
-- Ended with entropy: {state.belief_entropy:.2f} bits
-- Information gained: {np.log2(len(state.current_beliefs)) - state.belief_entropy:.2f} bits
-"""
-            else:
-                # Show current game state
-                round_info = f"""
-**Game Settings:**
-- Target Value: {state.target_value} (hidden from Player 2)
-- Most Likely Target: {state.most_likely_target}
-- Belief Entropy: {state.belief_entropy:.2f} bits
-- Round: {state.round_number}/{state.max_rounds}
-"""
-        else:
-            round_info = "Start a new game to see round information."
-
         # Belief visualization
         belief_chart = self._create_belief_chart()
 
         # Game log
         game_log = self._create_game_log()
+
+        round_info = ""
 
         return status, round_info, belief_chart, game_log
 
