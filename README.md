@@ -85,6 +85,11 @@ uv pip install -r requirements.txt
 pip install -r requirements.txt
 ```
 
+4. **Set up pre-commit hooks (optional for development):**
+```bash
+pre-commit install
+```
+
 ### Running the Game
 
 **Launch the interactive web interface:**
@@ -210,6 +215,32 @@ This implementation demonstrates:
 - `numpy`: Numerical computations for Bayesian inference
 - `matplotlib`: Belief distribution visualization
 - `pytest`: Testing framework
+- `pre-commit`: Code quality automation
+- `ruff`: Fast Python linter and formatter (replaces Black, isort, flake8)
+
+### Development Workflow
+```bash
+# Install pre-commit hooks
+pre-commit install
+
+# Run pre-commit manually
+pre-commit run --all-files
+
+# Run tests with coverage
+python -m pytest tests/ --cov=domains --cov=ui --cov-report=html
+
+# Code formatting and linting (automatic with pre-commit)
+ruff check --fix .
+ruff format .
+mypy .
+```
+
+### CI/CD Pipeline
+- **GitHub Actions**: Automated testing on Python 3.10, 3.11, 3.12
+- **Pre-commit hooks**: Code quality checks (Ruff, mypy, bandit)
+- **Test coverage**: Comprehensive coverage reporting
+- **Security scanning**: Trivy vulnerability scanner
+- **Auto-deployment**: Pushes to Hugging Face Spaces on main branch
 
 ### Design Principles
 1. **Pure Functions**: Domains contain pure, testable functions
