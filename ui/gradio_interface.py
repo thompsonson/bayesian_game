@@ -1,7 +1,5 @@
 import gradio as gr
-import numpy as np
 import matplotlib.pyplot as plt
-from typing import Tuple, Dict, Any, Union
 
 from domains.coordination.game_coordination import BayesianGame, GamePhase
 
@@ -16,7 +14,7 @@ class GradioInterface:
 
     def reset_game(
         self, dice_sides: int = 6, max_rounds: int = 10
-    ) -> Tuple[str, str, plt.Figure, str]:
+    ) -> tuple[str, plt.Figure, str]:
         """Reset the game with new parameters.
 
         Args:
@@ -24,28 +22,25 @@ class GradioInterface:
             max_rounds: Maximum number of rounds
 
         Returns:
-            Tuple of (status, round_info, belief_chart, game_log)
+            Tuple of (status, belief_chart, game_log)
         """
         self.game = BayesianGame(dice_sides=dice_sides, max_rounds=max_rounds)
         return self._get_interface_state()
 
-    def start_new_game(
-        self, target_value: str = ""
-    ) -> Tuple[str, str, plt.Figure, str]:
+    def start_new_game(self, target_value: str = "") -> tuple[str, plt.Figure, str]:
         """Start a new game.
 
         Args:
             target_value: Optional specific target value
 
         Returns:
-            Tuple of (status, round_info, belief_chart, game_log)
+            Tuple of (status, belief_chart, game_log)
         """
         try:
             target = int(target_value) if target_value.strip() else None
             if target is not None and not (1 <= target <= self.game.dice_sides):
                 return (
                     f"❌ Target value must be between 1 and {self.game.dice_sides}",
-                    "",
                     self._create_empty_chart(),
                     "",
                 )
@@ -53,22 +48,21 @@ class GradioInterface:
             self.game.start_new_game(target_value=target)
             return self._get_interface_state()
         except ValueError as e:
-            return f"❌ Error: {str(e)}", "", self._create_empty_chart(), ""
+            return f"❌ Error: {e!s}", self._create_empty_chart(), ""
 
-    def play_round(self) -> Tuple[str, str, plt.Figure, str]:
+    def play_round(self) -> tuple[str, plt.Figure, str]:
         """Play one round of the game.
 
         Returns:
-            Tuple of (status, round_info, belief_chart, game_log)
+            Tuple of (status, belief_chart, game_log)
         """
         try:
             # Check if game is already finished - but still show the final state
             if self.game.is_game_finished():
                 # Get the current final state but with a message about being finished
-                status, round_info, belief_chart, game_log = self._get_interface_state()
+                status, belief_chart, game_log = self._get_interface_state()
                 return (
                     "🏁 Game completed! All rounds finished. Start a new game to play again.",
-                    round_info,
                     belief_chart,
                     game_log,
                 )
@@ -76,7 +70,6 @@ class GradioInterface:
             if self.game.game_state.phase != GamePhase.PLAYING:
                 return (
                     "❌ Game not in playing phase. Start a new game first.",
-                    "",
                     self._create_empty_chart(),
                     "",
                 )
@@ -84,13 +77,13 @@ class GradioInterface:
             self.game.play_round()
             return self._get_interface_state()
         except ValueError as e:
-            return f"❌ Error: {str(e)}", "", self._create_empty_chart(), ""
+            return f"❌ Error: {e!s}", self._create_empty_chart(), ""
 
-    def _get_interface_state(self) -> Tuple[str, str, plt.Figure, str]:
+    def _get_interface_state(self) -> tuple[str, plt.Figure, str]:
         """Get current interface state.
 
         Returns:
-            Tuple of (status, round_info, belief_chart, game_log)
+            Tuple of (status, belief_chart, game_log)
         """
         state = self.game.get_current_state()
 
@@ -104,15 +97,15 @@ class GradioInterface:
             accuracy = self.game.get_final_guess_accuracy()
             status = f"{correct} Game finished! Final guess: {state.most_likely_target} (True: {state.target_value}) - Accuracy: {accuracy:.2f}"
 
+        # Round information - removed for cleaner UI
+
         # Belief visualization
         belief_chart = self._create_belief_chart()
 
         # Game log
         game_log = self._create_game_log()
 
-        round_info = ""
-
-        return status, round_info, belief_chart, game_log
+        return status, belief_chart, game_log
 
     def _create_belief_chart(self) -> plt.Figure:
         """Create belief distribution chart.
@@ -254,11 +247,15 @@ class GradioInterface:
 
             # Add some Bayesian insights
             final_accuracy = self.game.get_final_guess_accuracy()
-            if final_accuracy > 0.5:
+            # Accuracy thresholds
+            STRONG_EVIDENCE_THRESHOLD = 0.5
+            MODERATE_EVIDENCE_THRESHOLD = 0.3
+
+            if final_accuracy > STRONG_EVIDENCE_THRESHOLD:
                 log_lines.append(
                     f"🎯 Strong evidence: {final_accuracy:.1%} confidence in true target"
                 )
-            elif final_accuracy > 0.3:
+            elif final_accuracy > MODERATE_EVIDENCE_THRESHOLD:
                 log_lines.append(
                     f"🤔 Moderate evidence: {final_accuracy:.1%} confidence in true target"
                 )
@@ -314,7 +311,6 @@ def create_interface() -> gr.Interface:
 
             with gr.Column(scale=2):
                 status_output = gr.Textbox(label="Game Status", interactive=False)
-                round_info = gr.Markdown("Start a new game to begin.")
                 belief_plot = gr.Plot(label="Belief Distribution")
                 game_log = gr.Markdown("Game log will appear here.")
 
@@ -322,24 +318,24 @@ def create_interface() -> gr.Interface:
         reset_btn.click(
             interface.reset_game,
             inputs=[dice_sides, max_rounds],
-            outputs=[status_output, round_info, belief_plot, game_log],
+            outputs=[status_output, belief_plot, game_log],
         )
 
         start_btn.click(
             interface.start_new_game,
             inputs=[target_input],
-            outputs=[status_output, round_info, belief_plot, game_log],
+            outputs=[status_output, belief_plot, game_log],
         )
 
         play_btn.click(
             interface.play_round,
-            outputs=[status_output, round_info, belief_plot, game_log],
+            outputs=[status_output, belief_plot, game_log],
         )
 
         # Initialize interface
         demo.load(
             interface._get_interface_state,
-            outputs=[status_output, round_info, belief_plot, game_log],
+            outputs=[status_output, belief_plot, game_log],
         )
 
     return demo

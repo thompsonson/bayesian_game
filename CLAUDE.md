@@ -13,6 +13,7 @@ A Bayesian Game implementation featuring a Belief-based Agent using domain-drive
 
 ## Development Practices
 - Use conventional commits when committing code to git
+- Always use uv and the local venv
 
 ## Architecture
 Domain-Driven Design with 3 modules:

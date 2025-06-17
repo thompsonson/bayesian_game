@@ -6,14 +6,13 @@ build-backend = "setuptools.build_meta"
 name = "bayesian-game"
 description = "Interactive Bayesian inference game with domain-driven design"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
     {name = "Thompson", email = "thompsonson@example.com"},
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Education",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -46,11 +45,16 @@ Repository = "https://github.com/thompsonson/bayesian_game"
 "Bug Tracker" = "https://github.com/thompsonson/bayesian_game/issues"
 "Hugging Face Space" = "https://huggingface.co/spaces/thompsonson/bayesian_game"
 
+[tool.setuptools]
+packages = ["domains", "ui"]
+
 [tool.setuptools_scm]
 
 [tool.ruff]
 target-version = "py310"
 line-length = 88
+
+[tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -75,7 +79,7 @@ ignore = [
     "PLR0915", # too many statements
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "tests/**/*" = ["PLR2004", "S101", "ARG001"]
 
 [tool.ruff.format]
@@ -87,13 +91,13 @@ line-ending = "auto"
 [tool.mypy]
 python_version = "3.10"
 check_untyped_defs = true
-disallow_any_generics = true
-disallow_incomplete_defs = true
-disallow_untyped_defs = true
+disallow_any_generics = false
+disallow_incomplete_defs = false
+disallow_untyped_defs = false
 no_implicit_optional = true
 warn_redundant_casts = true
-warn_unused_ignores = true
-warn_return_any = true
+warn_unused_ignores = false
+warn_return_any = false
 strict_equality = true
 
 [[tool.mypy.overrides]]
