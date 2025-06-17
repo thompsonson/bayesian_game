@@ -20,24 +20,24 @@ class TestArchitecturalConstraints:
     """Test architectural constraints and domain separation."""
 
     def test_belief_update_dataclass_structure(self):
-        """Test that BeliefUpdate contains only comparison_result field."""
+        """Test that BeliefUpdate contains only comparison_results field."""
         # Get all fields of BeliefUpdate
         fields = BeliefUpdate.__dataclass_fields__
 
-        # Should only contain comparison_result
+        # Should only contain comparison_results
         assert len(fields) == 1, (
             f"BeliefUpdate should have exactly 1 field, got {len(fields)}: "
             f"{list(fields.keys())}"
         )
-        assert "comparison_result" in fields, (
-            "BeliefUpdate must contain comparison_result field"
+        assert "comparison_results" in fields, (
+            "BeliefUpdate must contain comparison_results field"
         )
         assert "dice_roll" not in fields, (
             "BeliefUpdate MUST NOT contain dice_roll field"
         )
 
     def test_environment_evidence_dataclass_structure(self):
-        """Test that EnvironmentEvidence contains both dice_roll and comparison_result."""
+        """Test that EnvironmentEvidence contains both dice_roll and comparison_results."""
         # Get all fields of EnvironmentEvidence
         fields = EnvironmentEvidence.__dataclass_fields__
 
@@ -47,8 +47,8 @@ class TestArchitecturalConstraints:
             f"{list(fields.keys())}"
         )
         assert "dice_roll" in fields, "EnvironmentEvidence must contain dice_roll field"
-        assert "comparison_result" in fields, (
-            "EnvironmentEvidence must contain comparison_result field"
+        assert "comparison_results" in fields, (
+            "EnvironmentEvidence must contain comparison_results field"
         )
 
     def test_belief_state_methods_no_dice_roll_parameters(self):
@@ -69,14 +69,14 @@ class TestArchitecturalConstraints:
 
     def test_belief_update_creation_without_dice_roll(self):
         """Test that BeliefUpdate can be created without dice_roll."""
-        # This should work (only comparison_result)
-        update = BeliefUpdate(comparison_result="higher")
-        assert update.comparison_result == "higher"
+        # This should work (only comparison_results)
+        update = BeliefUpdate(comparison_results=["higher"])
+        assert update.comparison_results == ["higher"]
 
         # This should fail if dice_roll field exists
         try:
             # This should raise TypeError if dice_roll is not a field
-            BeliefUpdate(dice_roll=3, comparison_result="higher")
+            BeliefUpdate(dice_roll=3, comparison_results=["higher"])
             pytest.fail("BeliefUpdate should not accept dice_roll parameter")
         except TypeError:
             pass  # Expected - dice_roll should not be a valid parameter
@@ -100,8 +100,8 @@ class TestArchitecturalConstraints:
 
         # Verify that evidence history in belief domain contains only comparison results
         for evidence in game.belief_state.evidence_history:
-            assert hasattr(evidence, "comparison_result"), (
-                "Belief evidence must have comparison_result"
+            assert hasattr(evidence, "comparison_results"), (
+                "Belief evidence must have comparison_results"
             )
             assert not hasattr(evidence, "dice_roll"), (
                 "Belief evidence MUST NOT have dice_roll"
@@ -127,7 +127,7 @@ class TestArchitecturalConstraints:
         belief_state = BayesianBeliefState(dice_sides=6)
 
         # Apply "higher" evidence
-        update = BeliefUpdate(comparison_result="higher")
+        update = BeliefUpdate(comparison_results=["higher"])
         belief_state.update_beliefs(update)
 
         # Verify that probabilities follow expected pattern for "higher"
@@ -153,14 +153,14 @@ class TestArchitecturalConstraints:
         assert hasattr(state.evidence_history[0], "dice_roll"), (
             "Game state should maintain full evidence for display"
         )
-        assert hasattr(state.evidence_history[0], "comparison_result"), (
+        assert hasattr(state.evidence_history[0], "comparison_results"), (
             "Game state should maintain comparison results"
         )
 
         # But belief state should only have comparison results
         belief_evidence = game.belief_state.evidence_history[0]
-        assert hasattr(belief_evidence, "comparison_result"), (
-            "Belief evidence must have comparison_result"
+        assert hasattr(belief_evidence, "comparison_results"), (
+            "Belief evidence must have comparison_results"
         )
         assert not hasattr(belief_evidence, "dice_roll"), (
             "Belief evidence MUST NOT have dice_roll"
@@ -173,7 +173,7 @@ class TestArchitecturalConstraints:
             belief_state = BayesianBeliefState(dice_sides=dice_sides)
 
             # Apply "higher" evidence
-            update = BeliefUpdate(comparison_result="higher")
+            update = BeliefUpdate(comparison_results=["higher"])
             belief_state.update_beliefs(update)
 
             # Target 1 should have highest probability: P(roll > 1) = (dice_sides - 1) / dice_sides

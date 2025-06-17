@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Literal
 
 import numpy as np
 
@@ -8,7 +7,7 @@ import numpy as np
 class BeliefUpdate:
     """Update information for Bayesian belief state."""
 
-    comparison_result: Literal["higher", "lower", "same"]
+    comparison_results: list[str]
 
 
 class BayesianBeliefState:
@@ -65,7 +64,7 @@ class BayesianBeliefState:
         """
         self.evidence_history.append(evidence)
 
-        comparison_result = evidence.comparison_result
+        comparison_results = evidence.comparison_results
 
         # Calculate likelihood for each possible target value
         likelihoods = np.zeros(self.dice_sides)
@@ -73,18 +72,11 @@ class BayesianBeliefState:
         for target_idx in range(self.dice_sides):
             target_value = target_idx + 1
 
-            # Calculate P(comparison_result | target_value)
-            # This is the probability that ANY dice roll would produce this comparison result
-            if comparison_result == "higher":
-                # P(roll > target) = (dice_sides - target) / dice_sides
-                likelihood = (self.dice_sides - target_value) / self.dice_sides
-            elif comparison_result == "lower":
-                # P(roll < target) = (target - 1) / dice_sides
-                likelihood = (target_value - 1) / self.dice_sides
-            else:  # comparison_result == "same"
-                # P(roll = target) = 1 / dice_sides
-                likelihood = 1 / self.dice_sides
-
+            # Calculate P(comparison_results | target_value)
+            # This is the joint probability that a dice roll would produce ALL these evidence types
+            likelihood = self._calculate_joint_likelihood(
+                comparison_results, target_value
+            )
             likelihoods[target_idx] = likelihood
 
         # Apply Bayes' rule: posterior ∝ prior * likelihood
@@ -98,6 +90,54 @@ class BayesianBeliefState:
             # If all likelihoods are 0 (shouldn't happen with valid evidence),
             # reset to uniform distribution
             self.beliefs = np.ones(self.dice_sides) / self.dice_sides
+
+    def _calculate_joint_likelihood(
+        self, comparison_results: list[str], target_value: int
+    ) -> float:
+        """Calculate P(comparison_results | target_value) for multiple evidence types.
+
+        Args:
+            comparison_results: List of evidence results (e.g., ["lower", "half"])
+            target_value: Target value to calculate likelihood for
+
+        Returns:
+            Joint probability of observing all evidence types given the target
+        """
+        # For multiple evidence types from a single roll, we need to find
+        # the probability that a single dice roll satisfies ALL conditions
+
+        # Count dice rolls that satisfy all evidence conditions
+        satisfying_rolls = 0
+
+        for dice_roll in range(1, self.dice_sides + 1):
+            satisfies_all = True
+
+            for evidence in comparison_results:
+                if (
+                    (evidence == "higher" and not (dice_roll > target_value))
+                    or (evidence == "lower" and not (dice_roll < target_value))
+                    or (evidence == "same" and dice_roll != target_value)
+                    or (
+                        evidence == "half"
+                        and not (
+                            target_value % 2 == 0 and dice_roll == target_value // 2
+                        )
+                    )
+                    or (
+                        evidence == "double"
+                        and not (
+                            dice_roll == target_value * 2
+                            and dice_roll <= self.dice_sides
+                        )
+                    )
+                ):
+                    satisfies_all = False
+                    break
+
+            if satisfies_all:
+                satisfying_rolls += 1
+
+        return satisfying_rolls / self.dice_sides
 
     def reset_beliefs(self) -> None:
         """Reset beliefs to uniform prior and clear evidence history."""

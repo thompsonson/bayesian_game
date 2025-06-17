@@ -3,7 +3,11 @@ from enum import Enum
 from typing import Any
 
 from ..belief.belief_domain import BayesianBeliefState, BeliefUpdate
-from ..environment.environment_domain import Environment, EnvironmentEvidence
+from ..environment.environment_domain import (
+    Environment,
+    EnvironmentEvidence,
+    EvidenceType,
+)
 
 
 class GamePhase(Enum):
@@ -42,20 +46,28 @@ class BayesianGame:
     """
 
     def __init__(
-        self, dice_sides: int = 6, max_rounds: int = 10, seed: int | None = None
+        self,
+        dice_sides: int = 6,
+        max_rounds: int = 10,
+        evidence_type: EvidenceType = EvidenceType.BASIC,
+        seed: int | None = None,
     ):
         """Initialize the Bayesian Game.
 
         Args:
             dice_sides: Number of sides on the dice
             max_rounds: Maximum number of rounds to play
+            evidence_type: Type of evidence to generate (basic or extended)
             seed: Random seed for reproducible results
         """
         self.dice_sides = dice_sides
         self.max_rounds = max_rounds
+        self.evidence_type = evidence_type
 
         # Initialize domains
-        self.environment = Environment(dice_sides=dice_sides, seed=seed)
+        self.environment = Environment(
+            dice_sides=dice_sides, evidence_type=evidence_type, seed=seed
+        )
         self.belief_state = BayesianBeliefState(dice_sides=dice_sides)
 
         # Initialize game state
@@ -113,8 +125,8 @@ class BayesianGame:
         # Generate evidence from environment
         evidence = self.environment.roll_dice_and_compare()
 
-        # Update belief state (only pass comparison result, not dice roll)
-        belief_update = BeliefUpdate(comparison_result=evidence.comparison_result)
+        # Update belief state (only pass comparison results, not dice roll)
+        belief_update = BeliefUpdate(comparison_results=evidence.comparison_results)
         self.belief_state.update_beliefs(belief_update)
 
         # Update game state

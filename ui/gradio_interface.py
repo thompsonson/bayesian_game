@@ -2,6 +2,7 @@ import gradio as gr
 import matplotlib.pyplot as plt
 
 from domains.coordination.game_coordination import BayesianGame, GamePhase
+from domains.environment.environment_domain import EvidenceType
 
 
 class GradioInterface:
@@ -13,18 +14,29 @@ class GradioInterface:
         self.reset_game()
 
     def reset_game(
-        self, dice_sides: int = 6, max_rounds: int = 10
+        self,
+        dice_sides: int = 6,
+        max_rounds: int = 10,
+        evidence_type_str: str = "Basic",
     ) -> tuple[str, plt.Figure, str]:
         """Reset the game with new parameters.
 
         Args:
             dice_sides: Number of sides on the dice
             max_rounds: Maximum number of rounds
+            evidence_type_str: Evidence type ("Basic" or "Extended")
 
         Returns:
             Tuple of (status, belief_chart, game_log)
         """
-        self.game = BayesianGame(dice_sides=dice_sides, max_rounds=max_rounds)
+        evidence_type = (
+            EvidenceType.EXTENDED
+            if evidence_type_str == "Extended"
+            else EvidenceType.BASIC
+        )
+        self.game = BayesianGame(
+            dice_sides=dice_sides, max_rounds=max_rounds, evidence_type=evidence_type
+        )
         return self._get_interface_state()
 
     def start_new_game(self, target_value: str = "") -> tuple[str, plt.Figure, str]:
@@ -224,12 +236,20 @@ class GradioInterface:
         log_lines = ["**Evidence History:**\n"]
 
         for i, evidence in enumerate(self.game.game_state.evidence_history, 1):
-            emoji = {"higher": "⬆️", "lower": "⬇️", "same": "🎯"}[
-                evidence.comparison_result
-            ]
-            log_lines.append(
-                f"Round {i}: Rolled {evidence.dice_roll} → {evidence.comparison_result} {emoji}"
-            )
+            # Handle multiple evidence types
+            evidence_display = []
+            for result in evidence.comparison_results:
+                emoji = {
+                    "higher": "⬆️",
+                    "lower": "⬇️",
+                    "same": "🎯",
+                    "half": "½",
+                    "double": "x2",
+                }.get(result, "❓")
+                evidence_display.append(f"{result} {emoji}")
+
+            evidence_str = ", ".join(evidence_display)
+            log_lines.append(f"Round {i}: Rolled {evidence.dice_roll} → {evidence_str}")
 
         # Add completion message if game is finished
         if self.game.game_state.phase == GamePhase.FINISHED:
@@ -282,7 +302,9 @@ def create_interface() -> gr.Interface:
         **Game Rules:**
         - Judge and Player 1 can see the target die value
         - Player 2 must deduce the target value using Bayesian inference
-        - Each round: Player 1 rolls dice and reports "higher"/"lower"/"same" compared to target
+        - Each round: Player 1 rolls dice and reports evidence based on selected type
+        - **Basic Evidence**: higher/lower/same compared to target
+        - **Extended Evidence**: higher/lower/same/half/double (multiple types can apply)
         - Game runs for a specified number of rounds
         """
         )
@@ -298,6 +320,13 @@ def create_interface() -> gr.Interface:
                     max_rounds = gr.Number(
                         value=10, label="Max Rounds", minimum=1, maximum=50, precision=0
                     )
+
+                evidence_type_dropdown = gr.Dropdown(
+                    choices=["Basic", "Extended"],
+                    value="Basic",
+                    label="Evidence Type",
+                    info="Basic: higher/lower/same only. Extended: adds half/double evidence.",
+                )
 
                 reset_btn = gr.Button("🔄 Reset Game", variant="secondary")
 
@@ -317,7 +346,7 @@ def create_interface() -> gr.Interface:
         # Event handlers
         reset_btn.click(
             interface.reset_game,
-            inputs=[dice_sides, max_rounds],
+            inputs=[dice_sides, max_rounds, evidence_type_dropdown],
             outputs=[status_output, belief_plot, game_log],
         )
 

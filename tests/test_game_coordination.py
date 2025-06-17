@@ -20,7 +20,7 @@ class TestGameState:
 
     def test_game_state_with_optional_params(self):
         """Test creating game state with optional parameters."""
-        evidence = [EnvironmentEvidence(dice_roll=3, comparison_result="higher")]
+        evidence = [EnvironmentEvidence(dice_roll=3, comparison_results=["higher"])]
         beliefs = [0.2, 0.3, 0.5]
 
         state = GameState(
@@ -146,7 +146,9 @@ class TestBayesianGame:
         # Evidence should be valid
         evidence = updated_state.evidence_history[0]
         assert 1 <= evidence.dice_roll <= 6
-        assert evidence.comparison_result in ["higher", "lower", "same"]
+        # At least one basic comparison result should be present
+        basic_results = {"higher", "lower", "same"}
+        assert any(result in basic_results for result in evidence.comparison_results)
 
     def test_play_multiple_rounds(self):
         """Test playing multiple rounds."""
@@ -295,7 +297,7 @@ class TestBayesianGame:
         # Evidence should influence beliefs correctly
         for state in states:
             for evidence in state.evidence_history:
-                if evidence.comparison_result == "higher":
+                if "higher" in evidence.comparison_results:
                     # Target must be less than dice roll
                     for _target in range(evidence.dice_roll, 7):
                         # These targets should have reduced probability
@@ -309,7 +311,7 @@ class TestBayesianGame:
         # Apply evidence that changes beliefs
         from domains.belief.belief_domain import BeliefUpdate
 
-        update = BeliefUpdate(comparison_result="higher")
+        update = BeliefUpdate(comparison_results=["higher"])
         game.belief_state.update_beliefs(update)
 
         # Update game state to reflect the belief change
@@ -346,7 +348,7 @@ class TestBayesianGame:
                 state1.evidence_history, state2.evidence_history, strict=False
             ):
                 assert ev1.dice_roll == ev2.dice_roll
-                assert ev1.comparison_result == ev2.comparison_result
+                assert ev1.comparison_results == ev2.comparison_results
 
             # Beliefs should be identical
             assert state1.current_beliefs == state2.current_beliefs

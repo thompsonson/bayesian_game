@@ -9,15 +9,15 @@ class TestBeliefUpdate:
 
     def test_belief_update_creation(self):
         """Test creating belief update with valid data."""
-        update = BeliefUpdate(comparison_result="higher")
-        assert update.comparison_result == "higher"
+        update = BeliefUpdate(comparison_results=["higher"])
+        assert update.comparison_results == ["higher"]
 
     def test_belief_update_all_results(self):
         """Test belief update with all comparison results."""
         valid_results = ["higher", "lower", "same"]
         for result in valid_results:
-            update = BeliefUpdate(comparison_result=result)
-            assert update.comparison_result == result
+            update = BeliefUpdate(comparison_results=[result])
+            assert update.comparison_results == [result]
 
 
 class TestBayesianBeliefState:
@@ -63,7 +63,7 @@ class TestBayesianBeliefState:
         belief_state = BayesianBeliefState(dice_sides=6)
 
         # Update with evidence that favors lower target values
-        update = BeliefUpdate(comparison_result="higher")
+        update = BeliefUpdate(comparison_results=["higher"])
         belief_state.update_beliefs(update)
 
         # Lower targets are more likely to result in "higher" comparison
@@ -93,7 +93,7 @@ class TestBayesianBeliefState:
 
         # Evidence: comparison result is "higher" (dice roll > target)
         # This is more likely for lower target values
-        update = BeliefUpdate(comparison_result="higher")
+        update = BeliefUpdate(comparison_results=["higher"])
         belief_state.update_beliefs(update)
 
         # Lower targets should have higher probability than higher targets
@@ -111,7 +111,7 @@ class TestBayesianBeliefState:
 
         # Evidence: comparison result is "lower" (dice roll < target)
         # This is more likely for higher target values
-        update = BeliefUpdate(comparison_result="lower")
+        update = BeliefUpdate(comparison_results=["lower"])
         belief_state.update_beliefs(update)
 
         # Higher targets should have higher probability than lower targets
@@ -129,7 +129,7 @@ class TestBayesianBeliefState:
 
         # Evidence: comparison result is "same" (dice roll = target)
         # This has equal probability for all targets: P(roll = target) = 1/6
-        update = BeliefUpdate(comparison_result="same")
+        update = BeliefUpdate(comparison_results=["same"])
         belief_state.update_beliefs(update)
 
         # All targets should have equal probability since P(roll = target) = 1/6 for all
@@ -142,11 +142,11 @@ class TestBayesianBeliefState:
         belief_state = BayesianBeliefState(dice_sides=6)
 
         # First update: "higher" (favors lower targets)
-        update1 = BeliefUpdate(comparison_result="higher")
+        update1 = BeliefUpdate(comparison_results=["higher"])
         belief_state.update_beliefs(update1)
 
         # Second update: "lower" (favors higher targets)
-        update2 = BeliefUpdate(comparison_result="lower")
+        update2 = BeliefUpdate(comparison_results=["lower"])
         belief_state.update_beliefs(update2)
 
         # The combination should favor middle targets
@@ -167,9 +167,9 @@ class TestBayesianBeliefState:
         belief_state = BayesianBeliefState(dice_sides=6)
 
         updates = [
-            BeliefUpdate(comparison_result="higher"),
-            BeliefUpdate(comparison_result="lower"),
-            BeliefUpdate(comparison_result="same"),
+            BeliefUpdate(comparison_results=["higher"]),
+            BeliefUpdate(comparison_results=["lower"]),
+            BeliefUpdate(comparison_results=["same"]),
         ]
 
         for update in updates:
@@ -183,7 +183,7 @@ class TestBayesianBeliefState:
         belief_state = BayesianBeliefState(dice_sides=6)
 
         # Update beliefs
-        update = BeliefUpdate(comparison_result="higher")
+        update = BeliefUpdate(comparison_results=["higher"])
         belief_state.update_beliefs(update)
 
         # Verify beliefs changed from uniform
@@ -215,7 +215,7 @@ class TestBayesianBeliefState:
         # Create a near-certain belief by applying many "higher" updates
         # This will eventually make target 1 much more likely than others
         for _ in range(10):
-            update = BeliefUpdate(comparison_result="higher")
+            update = BeliefUpdate(comparison_results=["higher"])
             belief_state.update_beliefs(update)
 
         entropy = belief_state.get_entropy()
@@ -227,7 +227,7 @@ class TestBayesianBeliefState:
         belief_state = BayesianBeliefState(dice_sides=6)
 
         # Reduce uncertainty but don't eliminate it
-        update = BeliefUpdate(comparison_result="higher")
+        update = BeliefUpdate(comparison_results=["higher"])
         belief_state.update_beliefs(update)
 
         entropy = belief_state.get_entropy()
@@ -245,8 +245,8 @@ class TestBayesianBeliefState:
 
         # Add some evidence
         updates = [
-            BeliefUpdate(comparison_result="higher"),
-            BeliefUpdate(comparison_result="lower"),
+            BeliefUpdate(comparison_results=["higher"]),
+            BeliefUpdate(comparison_results=["lower"]),
         ]
 
         for i, update in enumerate(updates, 1):
@@ -258,10 +258,10 @@ class TestBayesianBeliefState:
         belief_state = BayesianBeliefState(dice_sides=6)
 
         updates = [
-            BeliefUpdate(comparison_result="higher"),
-            BeliefUpdate(comparison_result="lower"),
-            BeliefUpdate(comparison_result="same"),
-            BeliefUpdate(comparison_result="higher"),
+            BeliefUpdate(comparison_results=["higher"]),
+            BeliefUpdate(comparison_results=["lower"]),
+            BeliefUpdate(comparison_results=["same"]),
+            BeliefUpdate(comparison_results=["higher"]),
         ]
 
         # Check initial sum
@@ -278,7 +278,7 @@ class TestBayesianBeliefState:
 
         # Apply a few "higher" results to favor lower targets
         for _ in range(3):
-            update1 = BeliefUpdate(comparison_result="higher")
+            update1 = BeliefUpdate(comparison_results=["higher"])
             belief_state.update_beliefs(update1)
 
         # Target 1 should be favored, target 6 should have zero probability
@@ -289,7 +289,7 @@ class TestBayesianBeliefState:
         assert abs(prob_6 - 0.0) < 1e-10  # Target 6 should have zero probability
 
         # Apply more evidence and verify probabilities still sum to 1
-        update2 = BeliefUpdate(comparison_result="lower")
+        update2 = BeliefUpdate(comparison_results=["lower"])
         belief_state.update_beliefs(update2)
 
         total_prob = sum(belief_state.get_belief_for_target(i) for i in range(1, 7))
