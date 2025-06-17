@@ -102,6 +102,13 @@ jobs:
       with:
         scan-type: 'fs'
         scan-ref: '.'
+        format: 'table'
+
+    - name: Run Trivy vulnerability scanner (SARIF)
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
         format: 'sarif'
         output: 'trivy-results.sarif'
 
@@ -110,3 +117,4 @@ jobs:
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'
+      continue-on-error: true
