@@ -1,5 +1,6 @@
 import pytest
 
+from domains.belief.belief_domain import BeliefUpdate
 from domains.coordination.game_coordination import BayesianGame, GamePhase, GameState
 from domains.environment.environment_domain import EnvironmentEvidence
 
@@ -309,8 +310,6 @@ class TestBayesianGame:
         game.start_new_game(target_value=3)
 
         # Apply evidence that changes beliefs
-        from domains.belief.belief_domain import BeliefUpdate
-
         update = BeliefUpdate(comparison_results=["higher"])
         game.belief_state.update_beliefs(update)
 

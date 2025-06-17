@@ -11,6 +11,7 @@ import inspect
 
 import pytest
 
+import domains.belief.belief_domain as belief_module
 from domains.belief.belief_domain import BayesianBeliefState, BeliefUpdate
 from domains.coordination.game_coordination import BayesianGame
 from domains.environment.environment_domain import EnvironmentEvidence
@@ -109,8 +110,6 @@ class TestArchitecturalConstraints:
 
     def test_domain_import_isolation(self):
         """Test that belief domain doesn't import environment domain."""
-        import domains.belief.belief_domain as belief_module
-
         # Get all imports in the belief domain module
         belief_source = inspect.getsource(belief_module)
 
