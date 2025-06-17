@@ -29,7 +29,7 @@ type-check:
 security:
 	uv run bandit -r . -f json -o bandit-report.json || true
 
-check: lint format-check type-check security
+check: lint format-check type-check security pre-commit
 	@echo "All checks completed"
 
 test:

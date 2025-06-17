@@ -262,7 +262,7 @@ Round 1: Evidence "higher" (dice roll > target)
 ├─ Lower targets become more likely
 └─ Entropy: 2.15 bits
 
-Round 2: Evidence "lower" (dice roll < target)  
+Round 2: Evidence "lower" (dice roll < target)
 ├─ P(roll<1)=0/6, P(roll<2)=1/6, ..., P(roll<6)=5/6
 ├─ Higher targets become more likely
 └─ Entropy: 1.97 bits
