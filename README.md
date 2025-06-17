@@ -275,9 +275,24 @@ Round 3: Evidence "same" (dice roll = target)
 
 ## 🚀 Deployment
 
-Ready for deployment on:
-- **Hugging Face Spaces**: Direct deployment support
-- **Local Server**: Built-in Gradio server
+### Hugging Face Spaces (Automated)
+
+The repository includes automated deployment to Hugging Face Spaces via GitHub Actions. To set this up:
+
+1. **Create a Hugging Face Space**: Go to [hf.co/new-space](https://hf.co/new-space) and create a new Gradio space
+2. **Get your HF Token**: Visit [hf.co/settings/tokens](https://hf.co/settings/tokens) and create a token with write access
+3. **Add GitHub Secret**: In your GitHub repository, go to Settings > Secrets and variables > Actions, and add:
+   - Name: `HF_TOKEN`
+   - Value: Your Hugging Face token
+4. **Update workflow**: Edit `.github/workflows/deploy.yml` and replace:
+   - `HF_USERNAME`: Your Hugging Face username
+   - `HF_SPACE_NAME`: Your space name
+
+The deployment will automatically trigger after successful CI runs on the main branch.
+
+### Other Deployment Options
+
+- **Local Server**: Built-in Gradio server (`python app.py`)
 - **Cloud Platforms**: Standard Python web app deployment
 
 ---
