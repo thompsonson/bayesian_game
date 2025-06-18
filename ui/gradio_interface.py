@@ -103,11 +103,13 @@ class GradioInterface:
         if state.phase == GamePhase.SETUP:
             status = "🎯 Ready to start new game"
         elif state.phase == GamePhase.PLAYING:
-            status = f"🎲 Playing - Round {state.round_number}/{state.max_rounds}"
+            entropy = state.belief_entropy
+            status = f"🎲 Playing - Round {state.round_number}/{state.max_rounds} - Entropy: {entropy:.2f} bits"
         else:  # FINISHED
             correct = "✅" if self.game.was_final_guess_correct() else "❌"
             accuracy = self.game.get_final_guess_accuracy()
-            status = f"{correct} Game finished! Final guess: {state.most_likely_target} (True: {state.target_value}) - Accuracy: {accuracy:.2f}"
+            entropy = state.belief_entropy
+            status = f"{correct} Game finished! Final guess: {state.most_likely_target} (True: {state.target_value}) - Accuracy: {accuracy:.2f} - Entropy: {entropy:.2f} bits"
 
         # Round information - removed for cleaner UI
 
