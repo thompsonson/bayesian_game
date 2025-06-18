@@ -79,13 +79,15 @@ class BayesianBeliefState:
             )
             likelihoods[target_idx] = likelihood
 
-        # Apply Bayes' rule: posterior ∝ prior * likelihood
-        self.beliefs = self.beliefs * likelihoods
+        # Calculate unnormalized posterior: prior * likelihood
+        posterior_unnormalized = self.beliefs * likelihoods
 
-        # Normalize to ensure probabilities sum to 1
-        total_belief = np.sum(self.beliefs)
-        if total_belief > 0:
-            self.beliefs = self.beliefs / total_belief
+        # Calculate marginal: P(evidence) = sum of (prior * likelihood) for all targets
+        marginal = np.sum(posterior_unnormalized)
+
+        # Apply Bayes' rule: posterior = (prior * likelihood) / marginal
+        if marginal > 0:
+            self.beliefs = posterior_unnormalized / marginal
         else:
             # If all likelihoods are 0 (shouldn't happen with valid evidence),
             # reset to uniform distribution
